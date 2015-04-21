@@ -4,7 +4,7 @@ namespace Dafiti\Silex\Log;
 
 class Logger extends \Monolog\Logger
 {
-    public function log($message, $level = Logger::DEBUG, array $context = [])
+    public function log($message, $level = self::DEBUG, array $context = [])
     {
         return parent::log($level, $message, $context);
     }
