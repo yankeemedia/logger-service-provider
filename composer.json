@@ -1,0 +1,41 @@
+{
+    "name": "dafiti/logger-service-provider",
+    "description": "An extended Logger Service Provider for Silex",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "silex",
+        "logger",
+        "monolog",
+        "dafiti"
+    ],
+    "authors": [
+        {
+            "name": "Fabio da Silva Ribeiro",
+            "email": "silva.ribeiro@dafiti.com.br"
+        }
+    ],
+    "support": {
+        "issue": "https://github.com/dafiti/logger-service-provider/issues"
+    },
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.4.0",
+        "silex/silex": "~1.1",
+        "monolog/monolog": "~1.13.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "@stable",
+        "fabpot/php-cs-fixer": "@stable"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dafiti\\Silex\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Dafiti\\Silex\\": "tests/"
+        }
+    }
+}
