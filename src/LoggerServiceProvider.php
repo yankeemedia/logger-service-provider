@@ -12,7 +12,7 @@ class LoggerServiceProvider implements ServiceProviderInterface
     {
         $app['logger.class'] = '\Dafiti\Silex\Log\Logger';
 
-        $app['logger.factory'] = $app->protect(
+        $app['logger.create'] = $app->protect(
             function ($name, $level = 'debug', array $handlers = [], array $processors = []) use ($app) {
                 $logger = new $app['logger.class']($name);
                 $level  = $logger->translateLevel($level);

@@ -52,11 +52,11 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers Dafiti\Silex\LoggerServiceProvider::register
      */
-    public function testShouldFabricateLogger()
+    public function testShouldCreateLogger()
     {
         $this->app->register(new LoggerServiceProvider());
 
-        $logger = $this->app['logger.factory']('process');
+        $logger = $this->app['logger.create']('process');
         $handlers = $logger->getHandlers();
 
         $this->assertInstanceOf('\Dafiti\Silex\Log\Logger', $logger);
@@ -67,11 +67,11 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers Dafiti\Silex\LoggerServiceProvider::register
      */
-    public function testShouldFabricateLoggerWithAnotherHandler()
+    public function testShouldCreateLoggerWithAnotherHandler()
     {
         $this->app->register(new LoggerServiceProvider());
 
-        $logger = $this->app['logger.factory']('process', 'debug', [
+        $logger = $this->app['logger.create']('process', 'debug', [
             new Handler\FirePHPHandler(),
             new Handler\ErrorLogHandler(Handler\ErrorLogHandler::OPERATING_SYSTEM)
         ]);
@@ -82,14 +82,14 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers Dafiti\Silex\LoggerServiceProvider::register
      */
-    public function testShouldFabricateMultipleLoggers()
+    public function testShouldCreateMultipleLoggers()
     {
         $this->app->register(new LoggerServiceProvider(), [
             'logger.log_folder' => 'data/logs'
         ]);
 
-        $processLogger = $this->app['logger.factory']('process');
-        $workerLogger  = $this->app['logger.factory']('worker', 'warning');
+        $processLogger = $this->app['logger.create']('process');
+        $workerLogger  = $this->app['logger.create']('worker', 'warning');
 
         $this->assertCount(2, $this->app['logger']);
         $this->assertTrue($this->app['logger']->has('process'));
@@ -101,11 +101,11 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers Dafiti\Silex\LoggerServiceProvider::register
      */
-    public function testShouldFabricateWithProcessor()
+    public function testShouldCreateWithProcessor()
     {
         $this->app->register(new LoggerServiceProvider());
 
-        $worker = $this->app['logger.factory']('worker', 'info', [], [
+        $worker = $this->app['logger.create']('worker', 'info', [], [
             new Processor\UidProcessor()
         ]);
 
