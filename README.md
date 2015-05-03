@@ -24,6 +24,7 @@ Autoloading is [PSR-4](https://github.com/php-fig/fig-standards/blob/master/acce
 
 ## Usage
 
+#### Basic
 ```php
 use Silex\Application;
 use Dafiti\Silex\LoggerServiceProvider;
@@ -35,34 +36,92 @@ $app->register(new LoggerServiceProvider(), [
 ]);
 
 // Create Logger - (StreamHandler default)
-$app['logger.factory']('app');
+$app['logger.create']('app');
+```
 
+#### Logger with level, handlers and processors
+```php
 // Create Logger with another handlers
-$app['logger.factory']('worker', 'info', [
+$app['logger.create']('worker', 'info', [
     new FirePHPHandler(),
     new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM)
 ]);
 
+
 // Create Logger with processors
-$app['logger.factory']('worker', 'info', [], [
+$app['logger.create']('worker', 'info', [], [
     new Processor\UidProcessor()
 ]);
+```
 
+#### Log example
+```php
 // Log something
 $app['logger']->get('worker')->log('something');
+//or
 $app['logger']->worker->log('something');
+```
 
-
-// Add customer logger
-
+#### Customer Logger
+```php
 class Custom extends \Dafiti\Silex\Log\Logger
 {
 }
 
 $app['logger']->add(new Custom('custom'));
+```
 
+#### Logger exists
+```php
 // Check if logger exists
 $app['logger']->has('worker'); //boolean
+```
+
+#### Factory handler
+```php
+$worker = [
+    'class' => '\Monolog\Handler\StreamHandler',
+    'params' => [ // class parameters
+        'stream'         => '/tmp/worker.log',
+        'level'          => 'info',
+        'bubble'         => false,
+        'filePermission' => null,
+        'useLocking'     => true
+        
+    ]
+];
+$app['logger.handler']($worker);
+```
+
+#### Factory multiple loggers
+```php
+$loggers = [
+    'process' => [
+        'level' => 'debug',
+        'handlers' => [
+            [
+                'class' => '\Monolog\Handler\StreamHandler',
+                'params' => [
+                    'stream' => '/tmp/process.log'
+                ]
+            ],
+        ]
+    ],
+    'mail' => [
+        'handlers' => [
+            [
+                'class'  => '\Monolog\Handler\NativeMailerHandler',
+                'params' => [
+                    'to' => 'some@some.com',
+                    'subject' => 'Wat!',
+                    'from' => 'thing@thing.com'
+                ]
+            ]
+        ]
+    ]
+];
+
+$app['logger.factory']($loggers);
 ```
 
 ## License
