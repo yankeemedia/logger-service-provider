@@ -13,6 +13,7 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->app = new Application();
+        $this->app->register(new LoggerServiceProvider());
 
         parent::setUp();
     }
@@ -27,8 +28,6 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
      */
     public function testShouldRegister()
     {
-        $this->app->register(new LoggerServiceProvider());
-
         $this->assertInstanceOf('\Dafiti\Silex\Log\Collection', $this->app['logger']);
     }
 
@@ -42,21 +41,21 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
             'logger.level'      => 'debug'
         ];
 
-        $this->app->register(new LoggerServiceProvider(), $params);
+        $app = new Application();
 
-        $this->assertInstanceOf('\Dafiti\Silex\Log\Collection', $this->app['logger']);
-        $this->assertEquals($params['logger.log_folder'], $this->app['logger.log_folder']);
-        $this->assertEquals($params['logger.level'], $this->app['logger.level']);
+        $app->register(new LoggerServiceProvider(), $params);
+
+        $this->assertInstanceOf('\Dafiti\Silex\Log\Collection', $app['logger']);
+        $this->assertEquals($params['logger.log_folder'], $app['logger.log_folder']);
+        $this->assertEquals($params['logger.level'], $app['logger.level']);
     }
 
     /**
      * @covers Dafiti\Silex\LoggerServiceProvider::register
      */
-    public function testShouldFabricateLogger()
+    public function testShouldCreateLogger()
     {
-        $this->app->register(new LoggerServiceProvider());
-
-        $logger = $this->app['logger.factory']('process');
+        $logger = $this->app['logger.create']('process');
         $handlers = $logger->getHandlers();
 
         $this->assertInstanceOf('\Dafiti\Silex\Log\Logger', $logger);
@@ -67,11 +66,9 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers Dafiti\Silex\LoggerServiceProvider::register
      */
-    public function testShouldFabricateLoggerWithAnotherHandler()
+    public function testShouldCreateLoggerWithAnotherHandler()
     {
-        $this->app->register(new LoggerServiceProvider());
-
-        $logger = $this->app['logger.factory']('process', 'debug', [
+        $logger = $this->app['logger.create']('process', 'debug', [
             new Handler\FirePHPHandler(),
             new Handler\ErrorLogHandler(Handler\ErrorLogHandler::OPERATING_SYSTEM)
         ]);
@@ -82,33 +79,140 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers Dafiti\Silex\LoggerServiceProvider::register
      */
-    public function testShouldFabricateMultipleLoggers()
+    public function testShouldCreateMultipleLoggers()
     {
-        $this->app->register(new LoggerServiceProvider(), [
+        $app = new Application();
+
+        $app->register(new LoggerServiceProvider(), [
             'logger.log_folder' => 'data/logs'
         ]);
 
-        $processLogger = $this->app['logger.factory']('process');
-        $workerLogger  = $this->app['logger.factory']('worker', 'warning');
+        $processLogger = $app['logger.create']('process');
+        $workerLogger  = $app['logger.create']('worker', 'warning');
 
-        $this->assertCount(2, $this->app['logger']);
-        $this->assertTrue($this->app['logger']->has('process'));
-        $this->assertTrue($this->app['logger']->has('worker'));
-        $this->assertSame($processLogger, $this->app['logger']->get('process'));
-        $this->assertSame($workerLogger, $this->app['logger']->get('worker'));
+        $this->assertCount(2, $app['logger']);
+        $this->assertTrue($app['logger']->has('process'));
+        $this->assertTrue($app['logger']->has('worker'));
+        $this->assertSame($processLogger, $app['logger']->get('process'));
+        $this->assertSame($workerLogger, $app['logger']->get('worker'));
     }
 
     /**
      * @covers Dafiti\Silex\LoggerServiceProvider::register
      */
-    public function testShouldFabricateWithProcessor()
+    public function testShouldCreateWithProcessor()
     {
-        $this->app->register(new LoggerServiceProvider());
-
-        $worker = $this->app['logger.factory']('worker', 'info', [], [
+        $worker = $this->app['logger.create']('worker', 'info', [], [
             new Processor\UidProcessor()
         ]);
 
         $this->assertCount(1, $worker->getProcessors());
+    }
+
+    /**
+     * @covers Dafiti\Silex\LoggerServiceProvider::register
+     *
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Empty value is not allowed for loggers
+     */
+    public function testShouldThrowExceptionWhenFabricateWithWithoutLoggers()
+    {
+        $this->app['logger.factory']([]);
+    }
+
+    /**
+     * @covers Dafiti\Silex\LoggerServiceProvider::register
+     */
+    public function testShouldFabricateLoggersWithoutHandlers()
+    {
+        $loggers = [
+            'worker' => [
+                'level' => 'info'
+            ]
+        ];
+
+        $this->app['logger.factory']($loggers);
+
+        $this->assertCount(1, $this->app['logger']);
+        $this->assertCount(1, $this->app['logger']->worker->getHandlers());
+        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger']->worker->getHandlers()[0]);
+    }
+
+    /**
+     * @covers Dafiti\Silex\LoggerServiceProvider::register
+     */
+    public function testShouldFabricateLoggersWithDefaulLevelInHandlersWhenIsNotDefined()
+    {
+        $loggers = [
+            'worker' => [
+                'level' => 'warning',
+                'handlers' => [
+                    [
+                        'class' => '\Monolog\Handler\StreamHandler',
+                        'params' => [
+                            'stream'         => '/tmp/test.log',
+                            'bubble'         => true,
+                            'filePermission' => null
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->app['logger.factory']($loggers);
+
+        $this->assertCount(1, $this->app['logger']);
+        $this->assertCount(1, $this->app['logger']->worker->getHandlers());
+        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger']->worker->getHandlers()[0]);
+    }
+
+    /**
+     * @covers Dafiti\Silex\LoggerServiceProvider::register
+     */
+    public function testShouldFabricateLoggers()
+    {
+        $loggers = [
+            'worker' => [
+                'level' => 'debug',
+                'handlers' => [
+                    [
+                        'class' => '\Monolog\Handler\StreamHandler',
+                        'params' => [
+                            'stream'         => '/tmp/test.log',
+                            'bubble'         => true,
+                            'filePermission' => null
+                        ]
+                    ],
+                    [
+                        'class' => '\Monolog\Handler\SyslogHandler',
+                        'params' => [
+                            'ident'    => 'worker',
+                            'facility' => LOG_USER
+                        ]
+                    ]
+                ]
+            ],
+            'mail' => [
+                'level' => 'debug',
+                'handlers' => [
+                    [
+                        'class' => '\Monolog\Handler\StreamHandler',
+                        'params' => [
+                            'stream'         => '/tmp/test.log',
+                            'bubble'         => true,
+                            'filePermission' => null
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->app['logger.factory']($loggers);
+
+        $this->assertCount(2, $this->app['logger']);
+        $this->assertCount(2, $this->app['logger']->worker->getHandlers());
+        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger']->worker->getHandlers()[1]);
+        $this->assertCount(1, $this->app['logger']->mail->getHandlers());
+        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger']->mail->getHandlers()[0]);
     }
 }

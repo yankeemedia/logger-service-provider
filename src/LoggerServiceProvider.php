@@ -2,6 +2,8 @@
 
 namespace Dafiti\Silex;
 
+use Dafiti\Silex\Log\Factory;
+use Dafiti\Silex\Log\Logger;
 use Monolog\Handler\StreamHandler;
 use Silex\Application;
 use Silex\ServiceProviderInterface;
@@ -12,10 +14,10 @@ class LoggerServiceProvider implements ServiceProviderInterface
     {
         $app['logger.class'] = '\Dafiti\Silex\Log\Logger';
 
-        $app['logger.factory'] = $app->protect(
+        $app['logger.create'] = $app->protect(
             function ($name, $level = 'debug', array $handlers = [], array $processors = []) use ($app) {
                 $logger = new $app['logger.class']($name);
-                $level  = $logger->translateLevel($level);
+                $level = $logger->translateLevel($level);
 
                 if (empty($handlers)) {
                     $stream = sprintf('%s/%s.log', $app['logger.log_folder'], $name);
@@ -38,6 +40,39 @@ class LoggerServiceProvider implements ServiceProviderInterface
             }
         );
 
+        $app['logger.handler'] = $app->protect(new Factory\Handler());
+
+        $app['logger.factory'] = $app->protect(
+            function (array $loggers) use ($app) {
+                if (empty($loggers)) {
+                    throw new \InvalidArgumentException('Empty value is not allowed for loggers');
+                }
+
+                foreach ($loggers as $name => $values) {
+                    $level = 'debug';
+                    $handlers = [];
+
+                    if (isset($values['level'])) {
+                        $level = $values['level'];
+                    }
+
+                    if (!isset($values['handlers'])) {
+                        $values['handlers'] = [];
+                    }
+
+                    foreach ($values['handlers'] as $handler) {
+                        if (!isset($handler['level'])) {
+                            $handler['level'] = $level;
+                        }
+
+                        $handlers[] = $app['logger.handler']($handler);
+                    }
+
+                    $app['logger.create']($name, $level, $handlers);
+                }
+            }
+        );
+
         $app['logger'] = $app->share(
             function () {
                 return new Log\Collection();
@@ -49,6 +84,9 @@ class LoggerServiceProvider implements ServiceProviderInterface
         $app['logger.log_folder'] = null;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function boot(Application $app)
     {
     }

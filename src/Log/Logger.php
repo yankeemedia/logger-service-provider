@@ -6,16 +6,18 @@ class Logger extends \Monolog\Logger
 {
     public function log($message, $level = self::DEBUG, array $context = [])
     {
+        $level = $this->translateLevel($level);
+
         return parent::log($level, $message, $context);
     }
 
-    public function translateLevel($name)
+    public static function translateLevel($name)
     {
         if (is_int($name)) {
             return $name;
         }
 
-        $levels = $this->getLevels();
+        $levels = self::getLevels();
         $upper = strtoupper($name);
 
         if (!isset($levels[$upper])) {
