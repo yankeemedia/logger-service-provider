@@ -28,7 +28,7 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
      */
     public function testShouldRegister()
     {
-        $this->assertInstanceOf('\Dafiti\Silex\Log\Collection', $this->app['logger']);
+        $this->assertInstanceOf('\Dafiti\Silex\Log\Collection', $this->app['logger.manager']);
     }
 
     /**
@@ -45,7 +45,7 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
 
         $app->register(new LoggerServiceProvider(), $params);
 
-        $this->assertInstanceOf('\Dafiti\Silex\Log\Collection', $app['logger']);
+        $this->assertInstanceOf('\Dafiti\Silex\Log\Collection', $app['logger.manager']);
         $this->assertEquals($params['logger.log_folder'], $app['logger.log_folder']);
         $this->assertEquals($params['logger.level'], $app['logger.level']);
     }
@@ -90,11 +90,11 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
         $processLogger = $app['logger.create']('process');
         $workerLogger  = $app['logger.create']('worker', 'warning');
 
-        $this->assertCount(2, $app['logger']);
-        $this->assertTrue($app['logger']->has('process'));
-        $this->assertTrue($app['logger']->has('worker'));
-        $this->assertSame($processLogger, $app['logger']->get('process'));
-        $this->assertSame($workerLogger, $app['logger']->get('worker'));
+        $this->assertCount(2, $app['logger.manager']);
+        $this->assertTrue($app['logger.manager']->has('process'));
+        $this->assertTrue($app['logger.manager']->has('worker'));
+        $this->assertSame($processLogger, $app['logger.manager']->get('process'));
+        $this->assertSame($workerLogger, $app['logger.manager']->get('worker'));
     }
 
     /**
@@ -133,9 +133,9 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->app['logger.factory']($loggers);
 
-        $this->assertCount(1, $this->app['logger']);
-        $this->assertCount(1, $this->app['logger']->worker->getHandlers());
-        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger']->worker->getHandlers()[0]);
+        $this->assertCount(1, $this->app['logger.manager']);
+        $this->assertCount(1, $this->app['logger.manager']->worker->getHandlers());
+        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger.manager']->worker->getHandlers()[0]);
     }
 
     /**
@@ -161,9 +161,9 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->app['logger.factory']($loggers);
 
-        $this->assertCount(1, $this->app['logger']);
-        $this->assertCount(1, $this->app['logger']->worker->getHandlers());
-        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger']->worker->getHandlers()[0]);
+        $this->assertCount(1, $this->app['logger.manager']);
+        $this->assertCount(1, $this->app['logger.manager']->worker->getHandlers());
+        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger.manager']->worker->getHandlers()[0]);
     }
 
     /**
@@ -209,10 +209,10 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
 
         $this->app['logger.factory']($loggers);
 
-        $this->assertCount(2, $this->app['logger']);
-        $this->assertCount(2, $this->app['logger']->worker->getHandlers());
-        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger']->worker->getHandlers()[1]);
-        $this->assertCount(1, $this->app['logger']->mail->getHandlers());
-        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger']->mail->getHandlers()[0]);
+        $this->assertCount(2, $this->app['logger.manager']);
+        $this->assertCount(2, $this->app['logger.manager']->worker->getHandlers());
+        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger.manager']->worker->getHandlers()[1]);
+        $this->assertCount(1, $this->app['logger.manager']->mail->getHandlers());
+        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger.manager']->mail->getHandlers()[0]);
     }
 }

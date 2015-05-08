@@ -34,7 +34,7 @@ class LoggerServiceProvider implements ServiceProviderInterface
                     $logger->pushProcessor($processor);
                 }
 
-                $app['logger']->add($logger);
+                $app['logger.manager']->add($logger);
 
                 return $logger;
             }
@@ -73,7 +73,7 @@ class LoggerServiceProvider implements ServiceProviderInterface
             }
         );
 
-        $app['logger'] = $app->share(
+        $app['logger.manager'] = $app->share(
             function () {
                 return new Log\Collection();
             }
