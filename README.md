@@ -57,9 +57,9 @@ $app['logger.create']('worker', 'info', [], [
 #### Log example
 ```php
 // Log something
-$app['logger']->get('worker')->log('something');
+$app['logger.manager']->get('worker')->log('something');
 //or
-$app['logger']->worker->log('something');
+$app['logger.manager']->worker->log('something');
 ```
 
 #### Customer Logger
@@ -68,13 +68,13 @@ class Custom extends \Dafiti\Silex\Log\Logger
 {
 }
 
-$app['logger']->add(new Custom('custom'));
+$app['logger.manager']->add(new Custom('custom'));
 ```
 
 #### Logger exists
 ```php
 // Check if logger exists
-$app['logger']->has('worker'); //boolean
+$app['logger.manager']->has('worker'); //boolean
 ```
 
 #### Factory handler
