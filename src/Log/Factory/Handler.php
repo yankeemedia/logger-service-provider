@@ -2,7 +2,6 @@
 
 namespace Dafiti\Silex\Log\Factory;
 
-use Dafiti\Silex\Log\Factory\AbstractFactory;
 use Dafiti\Silex\Log\Logger;
 
 class Handler extends AbstractFactory

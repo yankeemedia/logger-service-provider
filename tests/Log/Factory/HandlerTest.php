@@ -83,6 +83,7 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $handler);
     }
+
     /**
      * @covers Dafiti\Silex\Log\Factory\Handler
      * @covers Dafiti\Silex\Log\Factory\AbstractFactory

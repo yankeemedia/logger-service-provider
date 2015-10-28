@@ -2,8 +2,6 @@
 
 namespace Dafiti\Silex\Log\Factory;
 
-use Dafiti\Silex\Log\Logger;
-
 abstract class AbstractFactory
 {
     protected $args = [];
@@ -41,5 +39,4 @@ abstract class AbstractFactory
 
         return $param;
     }
-
 }

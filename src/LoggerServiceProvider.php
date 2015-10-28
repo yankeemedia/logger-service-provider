@@ -42,6 +42,8 @@ class LoggerServiceProvider implements ServiceProviderInterface
 
         $app['logger.handler'] = $app->protect(new Factory\Handler());
 
+        $app['logger.processor'] = $app->protect(new Factory\Processor());
+
         $app['logger.factory'] = $app->protect(
             function (array $loggers) use ($app) {
                 if (empty($loggers)) {
@@ -51,6 +53,7 @@ class LoggerServiceProvider implements ServiceProviderInterface
                 foreach ($loggers as $name => $values) {
                     $level = 'debug';
                     $handlers = [];
+                    $processors = [];
 
                     if (isset($values['level'])) {
                         $level = $values['level'];
@@ -58,6 +61,10 @@ class LoggerServiceProvider implements ServiceProviderInterface
 
                     if (!isset($values['handlers'])) {
                         $values['handlers'] = [];
+                    }
+
+                    if (!isset($values['processors'])) {
+                        $values['processors'] = [];
                     }
 
                     foreach ($values['handlers'] as $handler) {
@@ -68,7 +75,11 @@ class LoggerServiceProvider implements ServiceProviderInterface
                         $handlers[] = $app['logger.handler']($handler);
                     }
 
-                    $app['logger.create']($name, $level, $handlers);
+                    foreach ($values['processors'] as $processor) {
+                        $processors[] = $app['logger.processor']($processor);
+                    }
+
+                    $app['logger.create']($name, $level, $handlers, $processors);
                 }
             }
         );
