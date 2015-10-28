@@ -5,6 +5,14 @@ namespace Dafiti\Silex\Log\Factory;
 class HandlerTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @covers Dafiti\Silex\Log\Factory\Handler
+     */
+    public function testShouldIsAnInstanceOfAbstractFactory()
+    {
+        $this->assertInstanceOf('\Dafiti\Silex\Log\Factory\AbstractFactory', new Handler());
+    }
+
+    /**
      * @covers Dafiti\Silex\Log\Factory\Handler::__invoke
      *
      * @expectedException OutOfBoundsException
@@ -18,9 +26,10 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Dafiti\Silex\Log\Factory\Handler
+     * @covers Dafiti\Silex\Log\Factory\AbstractFactory
      *
      * @expectedException OutOfBoundsException
-     * @expectedExceptionMessage You must define param "token" for handler "\Monolog\Handler\HipChatHandler"
+     * @expectedExceptionMessage You must define param "token" for "\Monolog\Handler\HipChatHandler"
      */
     public function testShouldThrowExceptionWhenCreateHandlerWithoutRequiredParams()
     {
@@ -35,6 +44,7 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Dafiti\Silex\Log\Factory\Handler
+     * @covers Dafiti\Silex\Log\Factory\AbstractFactory
      */
     public function testShouldCreateHandlerWithRequiredParams()
     {
@@ -51,6 +61,7 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Dafiti\Silex\Log\Factory\Handler
+     * @covers Dafiti\Silex\Log\Factory\AbstractFactory
      */
     public function testShouldCreateHandlerWithAllParameters()
     {
