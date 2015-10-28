@@ -19,9 +19,18 @@ class Handler extends AbstractFactory
             $this->args['params']['level'] = Logger::translateLevel($this->args['params']['level']);
         }
 
-        $class = new \ReflectionClass($args['class']);
+        $class = new \ReflectionClass($this->args['class']);
         $params = $this->getParams($class->getConstructor());
 
-        return $class->newInstanceArgs($params);
+        $object = $class->newInstanceArgs($params);
+
+        if (isset($this->args['formatter'])) {
+            $formatterFactory = new Formatter();
+            $formatter = $formatterFactory($this->args['formatter']);
+
+            $object->setFormatter($formatter);
+        }
+
+        return $object;
     }
 }

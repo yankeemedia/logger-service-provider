@@ -56,7 +56,8 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
         ];
 
         $factory = new Handler();
-        $factory($handler);
+
+        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $factory($handler));
     }
 
     /**
@@ -81,5 +82,26 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
         $handler = $factory($data);
 
         $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $handler);
+    }
+    /**
+     * @covers Dafiti\Silex\Log\Factory\Handler
+     * @covers Dafiti\Silex\Log\Factory\AbstractFactory
+     */
+    public function testShouldCreateHandlerWithFormatter()
+    {
+        $handler = [
+            'class'  => '\Monolog\Handler\StreamHandler',
+            'params' => [
+                'stream' => '/tmp/handler.log'
+            ],
+            'formatter' => [
+                'class' => '\Monolog\Formatter\JsonFormatter'
+            ]
+        ];
+
+        $factory = new Handler();
+        $result = $factory($handler);
+
+        $this->assertInstanceOf('\Monolog\Formatter\JsonFormatter', $result->getFormatter());
     }
 }
