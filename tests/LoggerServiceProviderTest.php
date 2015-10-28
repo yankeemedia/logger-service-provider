@@ -169,6 +169,32 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers Dafiti\Silex\LoggerServiceProvider::register
      */
+    public function testShouldFabricateLoggersWithProcessors()
+    {
+        $loggers = [
+            'worker' => [
+                'level' => 'warning',
+                'processors' => [
+                    [
+                        'class'  => '\Monolog\Processor\GitProcessor',
+                        'params' => [
+                            'level' => 'debug',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->app['logger.factory']($loggers);
+
+        $this->assertCount(1, $this->app['logger.manager']);
+        $this->assertCount(1, $this->app['logger.manager']->worker->getProcessors());
+        $this->assertInstanceOf('\Monolog\Processor\GitProcessor', $this->app['logger.manager']->worker->getProcessors()[0]);
+    }
+
+    /**
+     * @covers Dafiti\Silex\LoggerServiceProvider::register
+     */
     public function testShouldFabricateLoggers()
     {
         $loggers = [
@@ -181,6 +207,9 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
                             'stream'         => '/tmp/test.log',
                             'bubble'         => true,
                             'filePermission' => null
+                        ],
+                        'formatter' => [
+                            'class' => '\Monolog\Formatter\JsonFormatter'
                         ]
                     ],
                     [
@@ -188,6 +217,14 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
                         'params' => [
                             'ident'    => 'worker',
                             'facility' => LOG_USER
+                        ]
+                    ]
+                ],
+                'processors' => [
+                    [
+                        'class'  => '\Monolog\Processor\GitProcessor',
+                        'params' => [
+                            'level' => 'debug',
                         ]
                     ]
                 ]
@@ -201,6 +238,12 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
                             'stream'         => '/tmp/test.log',
                             'bubble'         => true,
                             'filePermission' => null
+                        ],
+                        'formatter' => [
+                            'class' => '\Monolog\Formatter\LogstashFormatter',
+                            'params' => [
+                                'applicationName' => 'test'
+                            ]
                         ]
                     ]
                 ]
@@ -212,7 +255,21 @@ class LoggerServiceProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(2, $this->app['logger.manager']);
         $this->assertCount(2, $this->app['logger.manager']->worker->getHandlers());
         $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger.manager']->worker->getHandlers()[1]);
+
+        $this->assertInstanceOf(
+            '\Monolog\Formatter\JsonFormatter',
+            $this->app['logger.manager']->worker->getHandlers()[1]->getFormatter()
+        );
+
+        $this->assertCount(1, $this->app['logger.manager']->worker->getProcessors());
+        $this->assertInstanceOf('\Monolog\Processor\GitProcessor', $this->app['logger.manager']->worker->getProcessors()[0]);
+
         $this->assertCount(1, $this->app['logger.manager']->mail->getHandlers());
         $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $this->app['logger.manager']->mail->getHandlers()[0]);
+
+        $this->assertInstanceOf(
+            '\Monolog\Formatter\LogstashFormatter',
+            $this->app['logger.manager']->mail->getHandlers()[0]->getFormatter()
+        );
     }
 }

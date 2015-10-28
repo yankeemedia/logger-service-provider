@@ -5,6 +5,14 @@ namespace Dafiti\Silex\Log\Factory;
 class HandlerTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @covers Dafiti\Silex\Log\Factory\Handler
+     */
+    public function testShouldIsAnInstanceOfAbstractFactory()
+    {
+        $this->assertInstanceOf('\Dafiti\Silex\Log\Factory\AbstractFactory', new Handler());
+    }
+
+    /**
      * @covers Dafiti\Silex\Log\Factory\Handler::__invoke
      *
      * @expectedException OutOfBoundsException
@@ -18,9 +26,10 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Dafiti\Silex\Log\Factory\Handler
+     * @covers Dafiti\Silex\Log\Factory\AbstractFactory
      *
      * @expectedException OutOfBoundsException
-     * @expectedExceptionMessage You must define param "token" for handler "\Monolog\Handler\HipChatHandler"
+     * @expectedExceptionMessage You must define param "token" for "\Monolog\Handler\HipChatHandler"
      */
     public function testShouldThrowExceptionWhenCreateHandlerWithoutRequiredParams()
     {
@@ -35,6 +44,7 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Dafiti\Silex\Log\Factory\Handler
+     * @covers Dafiti\Silex\Log\Factory\AbstractFactory
      */
     public function testShouldCreateHandlerWithRequiredParams()
     {
@@ -46,11 +56,13 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
         ];
 
         $factory = new Handler();
-        $factory($handler);
+
+        $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $factory($handler));
     }
 
     /**
      * @covers Dafiti\Silex\Log\Factory\Handler
+     * @covers Dafiti\Silex\Log\Factory\AbstractFactory
      */
     public function testShouldCreateHandlerWithAllParameters()
     {
@@ -70,5 +82,27 @@ class HandlerTest extends \PHPUnit_Framework_TestCase
         $handler = $factory($data);
 
         $this->assertInstanceOf('\Monolog\Handler\StreamHandler', $handler);
+    }
+
+    /**
+     * @covers Dafiti\Silex\Log\Factory\Handler
+     * @covers Dafiti\Silex\Log\Factory\AbstractFactory
+     */
+    public function testShouldCreateHandlerWithFormatter()
+    {
+        $handler = [
+            'class'  => '\Monolog\Handler\StreamHandler',
+            'params' => [
+                'stream' => '/tmp/handler.log'
+            ],
+            'formatter' => [
+                'class' => '\Monolog\Formatter\JsonFormatter'
+            ]
+        ];
+
+        $factory = new Handler();
+        $result = $factory($handler);
+
+        $this->assertInstanceOf('\Monolog\Formatter\JsonFormatter', $result->getFormatter());
     }
 }
